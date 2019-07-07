@@ -1,0 +1,69 @@
+---
+# deployment
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    app: repo-nexus
+  name: repo-nexus
+  namespace: repo-nexus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repo-nexus
+  template:
+    metadata:
+      labels:
+        app: repo-nexus
+    spec:
+      containers:
+        - name: repo-nexus
+          image: sonatype/nexus3:3.17.0
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 8081
+            protocol: TCP
+          volumeMounts:
+          - name: repo-nexus-data
+            mountPath: /nexus-data
+      volumes:
+        - name: repo-nexus-data
+          persistentVolumeClaim:
+            claimName: repo-nexus-pvc
+
+---
+# service
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: repo-nexus
+  name: repo-nexus
+  namespace: repo-nexus
+spec:
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app: repo-nexus
+
+---
+# ingress
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: repo-nexus
+  namespace: repo-nexus
+spec:
+  rules:
+  - host: repo.lemonit.cn
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: repo-nexus
+          servicePort: 8081
