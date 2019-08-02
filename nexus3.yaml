@@ -44,6 +44,7 @@ metadata:
   name: repo-nexus
   namespace: repo-nexus
 spec:
+  type: NodePort
   ports:
     - port: 8081
       targetPort: 8081
