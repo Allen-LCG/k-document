@@ -49,21 +49,3 @@ spec:
       targetPort: 8081
   selector:
     app: repo-nexus
-
----
-# ingress
-
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: repo-nexus
-  namespace: repo-nexus
-spec:
-  rules:
-  - host: repo.lemonit.cn
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: repo-nexus
-          servicePort: 8081
