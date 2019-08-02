@@ -1,25 +1,30 @@
 ---
-# deployment
 
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  labels:
-    app: repo-nexus
-  name: repo-nexus
+  name: nexus
   namespace: repo-nexus
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: repo-nexus
+      app: nexus
   template:
     metadata:
       labels:
-        app: repo-nexus
+        app: nexus
     spec:
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "chown -R 200:200 /nexus-data"]
+          volumeMounts:
+          - name: repo-nexus-data
+            mountPath: /nexus-data
       containers:
-        - name: repo-nexus
+        - name: nexus
           image: sonatype/nexus3:3.17.0
           imagePullPolicy: IfNotPresent
           ports:
@@ -34,14 +39,11 @@ spec:
             claimName: repo-nexus-pvc
 
 ---
-# service
 
 kind: Service
 apiVersion: v1
 metadata:
-  labels:
-    app: repo-nexus
-  name: repo-nexus
+  name: nexus
   namespace: repo-nexus
 spec:
   type: NodePort
@@ -49,4 +51,4 @@ spec:
     - port: 8081
       targetPort: 1111
   selector:
-    app: repo-nexus
+    app: nexus
